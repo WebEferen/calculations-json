@@ -35,7 +35,7 @@ calculations.xlsToJson(config);
 ```
 
 ```javascript
-calculations.xslxToJson(config);
+calculations.xlsxToJson(config);
 ```
 
 ```javascript
@@ -62,6 +62,6 @@ const config = {
 ## Credits
 
 &copy; by Mike Makowski (**2018**)  
-  
+
 Portfolio: [MMakowski.Online](https://mmakowski.online)    
 LinkedIn: [WebEferen](https://www.linkedin.com/in/mmakowski97/)
