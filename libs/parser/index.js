@@ -1,12 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parse');
+const _config = require('../types/config');
 
 /**
  * Parser for any type of the file (stream / file)
  * @param {Object} config Config for the parser
  */
-function parseFile(config = {input, excludedLines: [], options: { headerLine: 0, contentStartsAt: 1, headerAsKey: false }}) {
+function parseFile(config = {input, excludedLines: [], options: _config.options}) {
   const parser = csv({delimiter: config.input.delimiter ? config.input.delimiter : ';'});
 
   if (input.type === 'file') {
@@ -36,7 +37,7 @@ function parseFile(config = {input, excludedLines: [], options: { headerLine: 0,
  * @param {Number[]} excludedLines Excluded lines array
  * @param {Object} options Options object
  */
-function parseNormalised(parser, buffer, excludedLines = [], options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}) {
+function parseNormalised(parser, buffer, excludedLines = [], options = _config.options) {
   let data = [];
   let headers = [];
   let iterator = 0;
@@ -102,7 +103,7 @@ function isExcluded(excludedLines = [], iterator = 0) {
  * @param {Number} iterator Iterator (defaults 0)
  * @param {Object} options Options object
  */
-function include(row, iterator = 0, options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}) {
+function include(row, iterator = 0, options = _config.options) {
   if (iterator === options.headerLine) return {header: true, data: row};
   if (iterator >= options.contentStartsAt) return {data: row};
   return;
@@ -124,7 +125,7 @@ exports = module.exports.parseFile = (
   process.exit(1);
 };
 
-exports = module.exports.parseFileFromBuffer = (inputStream, {options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}, excludedLines = []}) => {
+exports = module.exports.parseFileFromBuffer = (inputStream, {options = _config.options, excludedLines = []}) => {
   const parser = csv({delimiter: ';'});
   return parseNormalised(parser, Buffer.from(inputStream, 'utf8'), excludedLines, options);
 }
