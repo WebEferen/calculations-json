@@ -64,10 +64,15 @@ function parseNormalised(parser, buffer, excludedLines = [], options = {headerLi
   });
 }
 
-function mapPerKey(row = {data: []}, headers = []) {
+/**
+ * Mapping helper
+ * @param {String[]} row Data array
+ * @param {String[]} headers Headers array 
+ */
+function mapPerKey({data}, headers = []) {
   let index = 0;
   const mapped = [];
-  if (row.data[0]) headers.forEach(header => mapped[prepareKey(header)] = row.data[index++]);
+  if (data[0]) headers.forEach(header => mapped[prepareKey(header)] = data[index++]);
   return mapped;
 }
 
