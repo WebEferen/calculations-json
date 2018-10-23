@@ -18,11 +18,11 @@ exports = module.exports = libs;
 //   }
 // ).then((res) => console.log(res));
 
-libs.xlsToJson(
-  {
-    input: {
-      type: 'file',
-      path: __dirname + '/test.xls'
-    }
-  }
-).then((res) => console.log(res));
+// libs.xlsToJson(
+//   {
+//     input: {
+//       type: 'file',
+//       path: __dirname + '/test.xls'
+//     }
+//   }
+// ).then((res) => console.log(res));
