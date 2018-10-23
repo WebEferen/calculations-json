@@ -1,7 +1,7 @@
 exports = module.exports = CONFIG = {
   input: {
     type: 'file',
-    path: null,
+    path: '',
     delimiter: ';'
   },
   options: {
