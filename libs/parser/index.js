@@ -1,18 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parse');
+
 const _config = require('../types/config');
+const _options = _config.options;
+const _input = _config.input;
+const _excludedLines = _config.excludedLines;
 
 /**
  * Parser for any type of the file (stream / file)
- * @param {Object} config Config for the parser
+ * @param {_config} config Config for the parser
  */
-function parseFile(config = {input, excludedLines: [], options: _config.options}) {
+function parseFile(config = _config) {
   const parser = csv({delimiter: config.input.delimiter ? config.input.delimiter : ';'});
 
-  if (input.type === 'file') {
+  if (config.input.type === 'file') {
     const buffer = fs.readFileSync(path.normalize(config.input.path));
-    return parseNormalised(parser, buffer, excludedLines, config.options);
+    return parseNormalised(parser, buffer, config.excludedLines, config.options);
   }
   
   const buffer = [];
@@ -23,7 +27,7 @@ function parseFile(config = {input, excludedLines: [], options: _config.options}
   return new Promise((resolve, reject) => {
     stream.on('end', () => {
       buffer.push(Buffer.concat(buffsArray));
-      parseNormalised(parser, buffer[0], excludedLines, config.options)
+      parseNormalised(parser, buffer[0], config.excludedLines, config.options)
         .then((result) => resolve(result));
     });
     stream.on('error', () => reject('Error during process the file!'));
@@ -34,10 +38,10 @@ function parseFile(config = {input, excludedLines: [], options: _config.options}
  * Parser and normaliser for the whole file
  * @param {Parser} parser Parser library
  * @param {Buffer} buffer Current data buffer
- * @param {Number[]} excludedLines Excluded lines array
- * @param {Object} options Options object
+ * @param {_excludedLines} excludedLines Excluded lines array
+ * @param {_options} options Options object
  */
-function parseNormalised(parser, buffer, excludedLines = [], options = _config.options) {
+function parseNormalised(parser, buffer, excludedLines = _config.excludedLines, options = _config.options) {
   let data = [];
   let headers = [];
   let iterator = 0;
@@ -89,7 +93,7 @@ function prepareKey(key) {
 
 /**
  * Checks if the current line is excluded or not
- * @param {Number[]} excludedLines Excluded lines array
+ * @param {_excludedLines} excludedLines Excluded lines array
  * @param {Number} iterator Iterator (defaults 0) 
  */
 function isExcluded(excludedLines = [], iterator = 0) {
@@ -101,7 +105,7 @@ function isExcluded(excludedLines = [], iterator = 0) {
  * Includer (injecting some dependencies)
  * @param {String[]} row Current item row
  * @param {Number} iterator Iterator (defaults 0)
- * @param {Object} options Options object
+ * @param {_options} options Options object
  */
 function include(row, iterator = 0, options = _config.options) {
   if (iterator === options.headerLine) return {header: true, data: row};
@@ -111,15 +115,11 @@ function include(row, iterator = 0, options = _config.options) {
 
 /**
  * Parser for the csv
+ * @param {_config} config Config for the parser
  */
-exports = module.exports.parseFile = (
-  {
-    input = {type: 'file', path: null, delimiter: ';'},
-    options = {headerLine: 0, contentStartsAt: 1},
-    excludedLines = []
-  }) => {
+exports = module.exports.parseFile = (config = _config) => {
   
-  if (path) return parseFile({input, options, excludedLines});
+  if (path) return parseFile(config);
   
   console.error('Provide input.path object!');
   process.exit(1);

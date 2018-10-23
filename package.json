@@ -1,6 +1,6 @@
 {
   "name": "calculations-json",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Parser module for the XLS / XLSX / CSV formats into plan JSON",
   "main": "index.js",
   "scripts": {
