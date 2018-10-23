@@ -54,11 +54,17 @@ const config = {
   options: {
     headerLine: 0,          // header line number
     contentStartsAt: 1      // line from where the content starts
-    headerAsKey: false       // if want selected header to be the keys
+    headerAsKey: false      // if want selected header to be the keys
+    xlsSheetName: null     // for xls and xlsx provide sheet name or the first one will be taken
   },
   excludedLines: [0,1]      // lines to exclude
 };
 ```
+
+## Roadmap
+
+> [X] Prepare output mechanisms   
+> [X] Make the output fully configurable
 
 ## Credits
 
