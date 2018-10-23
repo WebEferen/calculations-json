@@ -3,49 +3,26 @@ const path = require('path');
 const csv = require('csv-parse');
 
 /**
- * Parser for the csv
- */
-exports = module.exports.parseFile = (
-  {
-    input = {type: 'file', path: null, delimiter: ';'},
-    options = {headerLine: 0, contentStartsAt: 1},
-    excludedLines = []
-  }) => {
-  
-  if (path) return parseFile({input, options, excludedLines});
-  
-  console.error('Provide input.path object!');
-  process.exit(1);
-};
-
-exports = module.exports.parseFileFromString = (inputStream, {options = {headerLine: 0, contentStartsAt: 1}, excludedLines = []}) => {
-  const parser = csv({delimiter: ';'});
-  return parseNormalised(parser, Buffer.from(inputStream, 'utf8'), excludedLines, options.headerLine, options.contentStartsAt);
-}
-
-/**
  * Parser for any type of the file (stream / file)
  * @param {Object} config Config for the parser
  */
-function parseFile({input, excludedLines = [], options = { headerLine: 0, contentStartsAt: 1}}) {
-  const parser = csv({delimiter: input.delimiter ? input.delimiter : ';'});
+function parseFile(config = {input, excludedLines: [], options: { headerLine: 0, contentStartsAt: 1, headerAsKey: false }}) {
+  const parser = csv({delimiter: config.input.delimiter ? config.input.delimiter : ';'});
 
   if (input.type === 'file') {
-    const buffer = fs.readFileSync(path.normalize(input.path));
-    return parseNormalised(parser, buffer, excludedLines, options.headerLine, options.contentStartsAt);
+    const buffer = fs.readFileSync(path.normalize(config.input.path));
+    return parseNormalised(parser, buffer, excludedLines, config.options);
   }
   
   const buffer = [];
   const buffsArray = [];
-  const stream = fs.createReadStream(input.path);
+  const stream = fs.createReadStream(config.input.path);
   stream.on('data', (data) => buffsArray.push(data));
 
   return new Promise((resolve, reject) => {
     stream.on('end', () => {
       buffer.push(Buffer.concat(buffsArray));
-      const headerLine = options.headerLine;
-      const contentStartsAt = options.contentStartsAt;
-      parseNormalised(parser, buffer[0], excludedLines, headerLine, contentStartsAt)
+      parseNormalised(parser, buffer[0], excludedLines, config.options)
         .then((result) => resolve(result));
     });
     stream.on('error', () => reject('Error during process the file!'));
@@ -57,19 +34,23 @@ function parseFile({input, excludedLines = [], options = { headerLine: 0, conten
  * @param {Parser} parser Parser library
  * @param {Buffer} buffer Current data buffer
  * @param {Number[]} excludedLines Excluded lines array
- * @param {Number} headerLine Header line number
- * @param {Number} contentStartsAt Content starts at given number
+ * @param {Object} options Options object
  */
-function parseNormalised(parser, buffer, excludedLines = [], headerLine = 0, contentStartsAt = 1) {
+function parseNormalised(parser, buffer, excludedLines = [], options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}) {
   let data = [];
+  let headers = [];
   let iterator = 0;
 
   parser.write(buffer);
   parser.on('readable', () => {
     while (row = parser.read()) { 
       if (!isExcluded(excludedLines, iterator)) {
-        const included = include(row, headerLine, contentStartsAt, iterator);
-        if (included) data.push(included);
+        const included = include(row, iterator, options);
+        if (included) {
+          if (options.headerAsKey && included.header) headers = included.data;
+          if (options.headerAsKey) data.push(mapPerKey(included, headers));
+          else data.push(included.data);
+        }
       }
       iterator++;
     };
@@ -81,6 +62,23 @@ function parseNormalised(parser, buffer, excludedLines = [], headerLine = 0, con
     parser.on('end', () => resolve(data));
     parser.on('error', () => reject('Error during process the file!'));
   });
+}
+
+function mapPerKey(row = {data: []}, headers = []) {
+  let index = 0;
+  const mapped = [];
+  if (row.data[0]) headers.forEach(header => mapped[prepareKey(header)] = row.data[index++]);
+  return mapped;
+}
+
+/**
+ * Prepares key for iteration
+ * @param {String} key Current array key
+ */
+function prepareKey(key) {
+  const keysArray = (key + '').toLowerCase().replace('%', '').replace('.', '').split(' ');
+  const keys = keysArray.filter((key) => key.length > 0);
+  return keys.join('_');
 }
 
 /**
@@ -96,12 +94,32 @@ function isExcluded(excludedLines = [], iterator = 0) {
 /**
  * Includer (injecting some dependencies)
  * @param {String[]} row Current item row
- * @param {Number} headerLine Line from header is presented
- * @param {Number} contentStartsAt Line from the content is being parsed
  * @param {Number} iterator Iterator (defaults 0)
+ * @param {Object} options Options object
  */
-function include(row, headerLine = 0, contentStartsAt = 1, iterator = 0) {
-  if (iterator === headerLine) return row;
-  if (iterator >= contentStartsAt) return row;
+function include(row, iterator = 0, options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}) {
+  if (iterator === options.headerLine) return {header: true, data: row};
+  if (iterator >= options.contentStartsAt) return {data: row};
   return;
+}
+
+/**
+ * Parser for the csv
+ */
+exports = module.exports.parseFile = (
+  {
+    input = {type: 'file', path: null, delimiter: ';'},
+    options = {headerLine: 0, contentStartsAt: 1},
+    excludedLines = []
+  }) => {
+  
+  if (path) return parseFile({input, options, excludedLines});
+  
+  console.error('Provide input.path object!');
+  process.exit(1);
+};
+
+exports = module.exports.parseFileFromBuffer = (inputStream, {options = {headerLine: 0, contentStartsAt: 1, headerAsKey: false}, excludedLines = []}) => {
+  const parser = csv({delimiter: ';'});
+  return parseNormalised(parser, Buffer.from(inputStream, 'utf8'), excludedLines, options);
 }

@@ -8,6 +8,7 @@
  *    delimiter: ';' (default)                // delimiter (works only in CSV)
  *  },
  *  options: {
+ *    headerAsKey: false                      // if want to get selected header as key
  *    headerLine: 0,                          // line number
  *    contentStartsAt: 1                      // line number
  *  },
@@ -17,3 +18,18 @@
 
 const libs = require('./libs');
 exports = module.exports = libs;
+
+// libs.xlsToJson({
+
+//   input: {
+//     type: 'file',
+//     path: __dirname + '/tets.xls',
+//   },
+//   options: {
+//     headerAsKey: true,
+//     headerLine: 4,
+//     contentStartsAt: 6
+//   },
+//   excludedLines: [0,1,2,3]
+
+// }).then((res) => console.log(res.reverse()));

@@ -54,6 +54,7 @@ const config = {
   options: {
     headerLine: 0,          // header line number
     contentStartsAt: 1      // line from where the content starts
+    headerAsKey: false       // if want selected header to be the keys
   },
   excludedLines: [0,1]      // lines to exclude
 };
