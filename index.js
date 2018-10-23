@@ -19,17 +19,17 @@
 const libs = require('./libs');
 exports = module.exports = libs;
 
-// libs.xlsToJson({
+libs.xlsToJson({
 
-//   input: {
-//     type: 'file',
-//     path: __dirname + '/tets.xls',
-//   },
-//   options: {
-//     headerAsKey: true,
-//     headerLine: 4,
-//     contentStartsAt: 6
-//   },
-//   excludedLines: [0,1,2,3]
+  input: {
+    type: 'file',
+    path: __dirname + '/test.xls',
+  },
+  options: {
+    headerAsKey: true,
+    headerLine: 4,
+    contentStartsAt: 6
+  },
+  excludedLines: [0,1,2,3]
 
-// }).then((res) => console.log(res.reverse()));
+}).then((res) => console.log(res.reverse()));
